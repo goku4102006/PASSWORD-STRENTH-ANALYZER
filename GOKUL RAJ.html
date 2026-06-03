@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Password Strength Analyzer</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background: #0f172a;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 500px;
+            background: #fff;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            text-align: center;
+            color: #1e293b;
+            margin-bottom: 20px;
+        }
+
+        .input-box {
+            position: relative;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ccc;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+
+        #toggleBtn {
+            position: absolute;
+            right: 10px;
+            top: 10px;
+            border: none;
+            background: none;
+            cursor: pointer;
+        }
+
+        .meter {
+            width: 100%;
+            height: 15px;
+            background: #ddd;
+            border-radius: 20px;
+            margin-top: 15px;
+            overflow: hidden;
+        }
+
+        .bar {
+            width: 0%;
+            height: 100%;
+            transition: 0.4s;
+        }
+
+        .result {
+            margin-top: 15px;
+            text-align: center;
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .details {
+            margin-top: 15px;
+        }
+
+        .details p {
+            margin: 5px 0;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            margin-top: 15px;
+            border: none;
+            border-radius: 8px;
+            background: #2563eb;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #1d4ed8;
+        }
+
+        .generated {
+            margin-top: 15px;
+            word-wrap: break-word;
+            font-weight: bold;
+            color: #2563eb;
+        }
+
+        .copy-btn {
+            background: #16a34a;
+        }
+
+        .copy-btn:hover {
+            background: #15803d;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+
+        <h1>Password Strength Analyzer</h1>
+
+        <div class="input-box">
+            <input type="password" id="password" placeholder="Enter Password">
+            <button id="toggleBtn" onclick="togglePassword()">👁</button>
+        </div>
+
+        <div class="meter">
+            <div class="bar" id="bar"></div>
+        </div>
+
+        <div class="result" id="result">Enter Password</div>
+
+        <div class="details">
+            <p id="length">❌ Minimum 8 Characters</p>
+            <p id="upper">❌ Uppercase Letter</p>
+            <p id="lower">❌ Lowercase Letter</p>
+            <p id="number">❌ Number</p>
+            <p id="special">❌ Special Character</p>
+            <p id="entropy">Entropy Score: 0</p>
+        </div>
+
+        <button onclick="generatePassword()">
+            Generate Strong Password
+        </button>
+
+        <div class="generated" id="generatedPassword"></div>
+
+        <button class="copy-btn" onclick="copyPassword()">
+            Copy Generated Password
+        </button>
+
+    </div>
+
+    <script>
+
+        const passwordInput = document.getElementById("password");
+
+        passwordInput.addEventListener("input", analyzePassword);
+
+        function analyzePassword() {
+
+            const password = passwordInput.value;
+
+            let score = 0;
+
+            const length = password.length >= 8;
+            const upper = /[A-Z]/.test(password);
+            const lower = /[a-z]/.test(password);
+            const number = /[0-9]/.test(password);
+            const special = /[^A-Za-z0-9]/.test(password);
+
+            update("length", length);
+            update("upper", upper);
+            update("lower", lower);
+            update("number", number);
+            update("special", special);
+
+            if (length) score += 20;
+            if (upper) score += 20;
+            if (lower) score += 20;
+            if (number) score += 20;
+            if (special) score += 20;
+
+            const bar = document.getElementById("bar");
+            const result = document.getElementById("result");
+
+            bar.style.width = score + "%";
+
+            if (score <= 40) {
+                result.innerText = "Weak";
+                result.style.color = "red";
+                bar.style.background = "red";
+            }
+            else if (score <= 80) {
+                result.innerText = "Medium";
+                result.style.color = "orange";
+                bar.style.background = "orange";
+            }
+            else {
+                result.innerText = "Strong";
+                result.style.color = "green";
+                bar.style.background = "green";
+            }
+
+            let entropy = Math.round(password.length * 4.7);
+            document.getElementById("entropy").innerText =
+                "Entropy Score: " + entropy;
+        }
+
+        function update(id, status) {
+
+            let item = document.getElementById(id);
+
+            if (status) {
+                item.innerHTML = "✅ " + item.innerHTML.substring(2);
+                item.style.color = "green";
+            } else {
+                item.innerHTML = "❌ " + item.innerHTML.substring(2);
+                item.style.color = "red";
+            }
+        }
+
+        function togglePassword() {
+
+            let input = document.getElementById("password");
+
+            if (input.type === "password") {
+                input.type = "text";
+            } else {
+                input.type = "password";
+            }
+        }
+
+        function generatePassword() {
+
+            const chars =
+                "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+";
+
+            let password = "";
+
+            for (let i = 0; i < 16; i++) {
+                password += chars.charAt(
+                    Math.floor(Math.random() * chars.length)
+                );
+            }
+
+            document.getElementById("generatedPassword").innerText =
+                password;
+        }
+
+        function copyPassword() {
+
+            let text =
+                document.getElementById("generatedPassword").innerText;
+
+            navigator.clipboard.writeText(text);
+
+            alert("Password Copied!");
+        }
+
+    </script>
+
+</body>
+
+</html>
